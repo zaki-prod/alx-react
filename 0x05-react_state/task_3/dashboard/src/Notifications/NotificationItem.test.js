@@ -1,30 +1,46 @@
 import React from "react";
-import { shallow, mount } from "enzyme";
 import NotificationItem from "./NotificationItem";
-import Notifications from './Notifications'
-import {StyleSheetTestUtils} from 'aphrodite';
-import App from '../App/App'
+import { shallow } from "enzyme";
+import { StyleSheetTestUtils } from "aphrodite";
 
-StyleSheetTestUtils.suppressStyleInjection();
+beforeEach(() => {
+  StyleSheetTestUtils.suppressStyleInjection();
+});
+afterEach(() => {
+  StyleSheetTestUtils.clearBufferAndResumeStyleInjection();
+});
 
+describe("rendering components", () => {
+  it("renders NotificationItem component without crashing", () => {
+    const wrapper = shallow(<NotificationItem />);
 
-describe("Testing NotificationItem Component", () => {
-    let wrapper;
-    beforeEach(() => {
-        wrapper = shallow(<NotificationItem />)
-    })
-    afterEach(() => {
-        wrapper.unmount()
-    })
-    test("renders component without crashing", () => {
-        expect(wrapper.length).toBe(1)
-    })
-    test("renders the correct html by passing dummy type and value props", () => {
-        const wrapper = shallow(<NotificationItem type="urgent" value="New resume available" />)
-        expect(wrapper.html()).toBe('<li data-notification-type="urgent" class="urgent_137u7ef-o_O-small_127e720">New resume available</li>')
-    })
-    test("renders the correct html by passing dummy html prop", () => {
-        const wrapper = shallow(<NotificationItem html={{ __html: '<u>test</u>' }}/>)
-        expect(wrapper.html()).toBe('<li data-notification-type="default" class="default_1tsdo2i-o_O-small_127e720"><u>test</u></li>')
-    })
-})
+    expect(wrapper.exists()).toBe(true);
+  });
+
+  it('renders correct html from type="default" value="test" props', () => {
+    const wrapper = shallow(<NotificationItem />);
+
+    wrapper.setProps({ type: "default", value: "test" });
+    expect(wrapper.html()).toEqual('<li class="default_2c02es" data-notification-type="default">test</li>');
+  });
+
+  it('renders correct html from  html="<u>test</u>" props', () => {
+    const wrapper = shallow(<NotificationItem />);
+
+    wrapper.setProps({ html: "<u>test</u>" });
+    expect(wrapper.html()).toEqual('<li data-urgent="true" class="urgent_cyonix"><u>test</u></li>');
+  });
+});
+
+describe("onclick event behaves as it should", () => {
+  it("should call console.log", () => {
+    const wrapper = shallow(<NotificationItem />);
+    const spy = jest.fn();
+
+    wrapper.setProps({ value: "test item", markAsRead: spy, id: 1 });
+    wrapper.find("li").props().onClick();
+    expect(spy).toBeCalledTimes(1);
+    expect(spy).toBeCalledWith(1);
+    spy.mockRestore();
+  });
+});
